@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitals Input - AI Triage Intake</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: #F8FBFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .canvas {
+            width: 1920px;
+            height: 1080px;
+            background: #F8FBFF;
+            position: relative;
+            transform: scale(0.5);
+            transform-origin: center;
+            padding: 60px;
+        }
+        @media (min-width: 1920px) {
+            .canvas {
+                transform: scale(1);
+            }
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 60px 80px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+        }
+        .header {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 700;
+            font-size: 48px;
+            color: #1A73E8;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        .form-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 50px;
+        }
+        .column-header {
+            font-size: 28px;
+            font-weight: 700;
+            color: #424242;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #1A73E8;
+        }
+        .form-group {
+            margin-bottom: 28px;
+        }
+        .form-label {
+            display: block;
+            font-size: 20px;
+            font-weight: 600;
+            color: #424242;
+            margin-bottom: 12px;
+        }
+        .form-input {
+            width: 100%;
+            height: 55px;
+            border: 2px solid #BDBDBD;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-size: 19px;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #1A73E8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+        select.form-input {
+            cursor: pointer;
+        }
+        .slider-container {
+            padding: 10px 0;
+        }
+        .slider {
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            background: #E0E0E0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #1A73E8;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .slider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #1A73E8;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .slider-value {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1A73E8;
+            margin-top: 10px;
+        }
+        .derived-section {
+            background: #F8FBFF;
+            border: 2px solid #1A73E8;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        .derived-header {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A73E8;
+            margin-bottom: 25px;
+        }
+        .derived-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        .derived-item {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #E0E0E0;
+        }
+        .derived-label {
+            font-size: 18px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+        .derived-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #424242;
+        }
+        .derived-value.warning {
+            color: #E53935;
+        }
+        .derived-value.normal {
+            color: #4CAF50;
+        }
+        .button-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background: #1A73E8;
+            color: white;
+            border: none;
+            padding: 22px 80px;
+            font-size: 26px;
+            font-weight: 700;
+            font-family: 'Open Sans', sans-serif;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+        .btn-primary:hover {
+            background: #1565C0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 18px;
+            color: #757575;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <div class="container">
+            <h1 class="header">Vitals Input: AI Triage Intake</h1>
+            
+            <div class="form-layout">
+                <!-- Left Column: Patient Demographics -->
+                <div>
+                    <div class="column-header">Patient Demographics</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Name or Patient ID</label>
+                        <input type="text" class="form-input" placeholder="Enter patient name or ID">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Age</label>
+                        <input type="number" class="form-input" placeholder="Enter age" min="0" max="120">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Sex</label>
+                        <select class="form-input">
+                            <option value="">Select sex</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Vital Signs -->
+                <div>
+                    <div class="column-header">Vital Signs</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Heart Rate (bpm)</label>
+                        <input type="number" class="form-input" placeholder="e.g., 85" id="hr">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Respiratory Rate (/min)</label>
+                        <input type="number" class="form-input" placeholder="e.g., 16">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Systolic BP (mmHg)</label>
+                        <input type="number" class="form-input" placeholder="e.g., 120" id="sbp">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">SpO₂ (%)</label>
+                        <input type="number" class="form-input" placeholder="e.g., 98" id="spo2">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Temperature (°C)</label>
+                        <input type="number" step="0.1" class="form-input" placeholder="e.g., 37.2" id="temp">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Pain Level (0-10)</label>
+                        <div class="slider-container">
+                            <input type="range" min="0" max="10" value="5" class="slider" id="painSlider">
+                            <div class="slider-value" id="painValue">5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Derived Features Section -->
+            <div class="derived-section">
+                <div class="derived-header">Derived Features (Auto-calculated)</div>
+                <div class="derived-grid">
+                    <div class="derived-item">
+                        <div class="derived-label">Shock Index</div>
+                        <div class="derived-value" id="shockIndex">--</div>
+                    </div>
+                    <div class="derived-item">
+                        <div class="derived-label">Fever Flag</div>
+                        <div class="derived-value normal" id="feverFlag">Normal</div>
+                    </div>
+                    <div class="derived-item">
+                        <div class="derived-label">Hypoxia Flag</div>
+                        <div class="derived-value normal" id="hypoxiaFlag">Normal</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Button -->
+            <div class="button-container">
+                <button class="btn-primary">🔹 Run AI Triage</button>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer-note">
+                Model: Logistic Regression (balanced) + Safety Rules Applied
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Pain slider value display
+        const painSlider = document.getElementById('painSlider');
+        const painValue = document.getElementById('painValue');
+        painSlider.addEventListener('input', function() {
+            painValue.textContent = this.value;
+        });
+        
+        // Auto-calculate derived features
+        function updateDerivedFeatures() {
+            const hr = parseFloat(document.getElementById('hr').value) || 0;
+            const sbp = parseFloat(document.getElementById('sbp').value) || 0;
+            const spo2 = parseFloat(document.getElementById('spo2').value) || 0;
+            const temp = parseFloat(document.getElementById('temp').value) || 0;
+            
+            // Shock Index
+            const shockIndexEl = document.getElementById('shockIndex');
+            if (hr > 0 && sbp > 0) {
+                const si = (hr / sbp).toFixed(2);
+                shockIndexEl.textContent = si;
+                shockIndexEl.className = 'derived-value ' + (si > 1.0 ? 'warning' : 'normal');
+            } else {
+                shockIndexEl.textContent = '--';
+                shockIndexEl.className = 'derived-value';
+            }
+            
+            // Fever Flag
+            const feverFlagEl = document.getElementById('feverFlag');
+            if (temp > 0) {
+                if (temp >= 38) {
+                    feverFlagEl.textContent = 'Fever Detected';
+                    feverFlagEl.className = 'derived-value warning';
+                } else {
+                    feverFlagEl.textContent = 'Normal';
+                    feverFlagEl.className = 'derived-value normal';
+                }
+            }
+            
+            // Hypoxia Flag
+            const hypoxiaFlagEl = document.getElementById('hypoxiaFlag');
+            if (spo2 > 0) {
+                if (spo2 < 92) {
+                    hypoxiaFlagEl.textContent = 'Hypoxia Detected';
+                    hypoxiaFlagEl.className = 'derived-value warning';
+                } else {
+                    hypoxiaFlagEl.textContent = 'Normal';
+                    hypoxiaFlagEl.className = 'derived-value normal';
+                }
+            }
+        }
+        
+        // Add event listeners to vital sign inputs
+        document.getElementById('hr').addEventListener('input', updateDerivedFeatures);
+        document.getElementById('sbp').addEventListener('input', updateDerivedFeatures);
+        document.getElementById('spo2').addEventListener('input', updateDerivedFeatures);
+        document.getElementById('temp').addEventListener('input', updateDerivedFeatures);
+    </script>
+</body>
+</html>
